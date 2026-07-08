@@ -11,3 +11,5 @@ target_compile_definitions(bancho_cpp PRIVATE
     BANCHO_HOST="${BANCHO_HOST}"
     BANCHO_PORT=${BANCHO_PORT}
 )
+
+target_link_options(bancho_cpp PRIVATE -static)
