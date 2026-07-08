@@ -1,0 +1,32 @@
+FROM debian:bookworm-slim AS builder
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    cmake \
+    ninja-build \
+    g++ \
+    gcc \
+    git \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /src
+COPY . .
+
+ARG BUILD_TYPE=Release
+ARG HOST=127.0.0.1
+ARG PORT=13000
+
+RUN cmake -S . -B build -G Ninja \
+        -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
+        -DCMAKE_C_COMPILER=gcc \
+        -DCMAKE_CXX_COMPILER=g++ \
+        -DBANCHO_HOST=${HOST} \
+        -DBANCHO_PORT=${PORT} \
+    && cmake --build build --parallel
+
+FROM debian:bookworm-slim
+
+WORKDIR /app
+COPY --from=builder /src/build/bancho_cpp .
+
+CMD ["./bancho_cpp"]
