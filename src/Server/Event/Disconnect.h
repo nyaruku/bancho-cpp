@@ -10,6 +10,8 @@ namespace Server::Event {
         } else {
             Logger::log(Logger::Category::Disconnect, "Client disconnected (ERROR)");
         }
-        state->socket.close(ec);
+        std::error_code close_ec;
+        state->socket.shutdown(asio::ip::tcp::socket::shutdown_both, close_ec);
+        state->socket.close(close_ec);
     }
 }
