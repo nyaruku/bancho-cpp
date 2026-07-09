@@ -30,6 +30,6 @@ RUN cmake -S . -B build -G Ninja \
 FROM debian:bookworm-slim
 
 WORKDIR /app
-COPY --from=builder /src/build/bancho_cpp .
+COPY --from=builder /src/build/src/bancho_cpp .
 
 CMD ["./bancho_cpp"]
