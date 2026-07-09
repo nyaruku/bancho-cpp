@@ -12,9 +12,6 @@ endif()
 if(NOT DEFINED BANCHO_THREADS OR BANCHO_THREADS STREQUAL "")
     set(BANCHO_THREADS "2")
 endif()
-if(NOT DEFINED BANCHO_LEGACY_HEADER OR BANCHO_LEGACY_HEADER STREQUAL "")
-    set(BANCHO_LEGACY_HEADER "-1")
-endif()
 
 add_executable(bancho_cpp main.cpp)
 
@@ -22,7 +19,6 @@ target_compile_definitions(bancho_cpp PRIVATE
     BANCHO_HOST="${BANCHO_HOST}"
     BANCHO_PORT=${BANCHO_PORT}
     BANCHO_THREADS=${BANCHO_THREADS}
-    BANCHO_LEGACY_HEADER=${BANCHO_LEGACY_HEADER}
 )
 
 target_link_libraries(bancho_cpp PRIVATE ZLIB::ZLIB)

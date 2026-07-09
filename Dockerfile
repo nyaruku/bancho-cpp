@@ -17,7 +17,6 @@ ARG BUILD_TYPE=Release
 ARG HOST=127.0.0.1
 ARG PORT=13380
 ARG THREADS=2
-ARG LEGACY_HEADER=-1
 
 RUN cmake -S . -B build -G Ninja \
         -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
@@ -26,7 +25,6 @@ RUN cmake -S . -B build -G Ninja \
         -DBANCHO_HOST=${HOST} \
         -DBANCHO_PORT=${PORT} \
         -DBANCHO_THREADS=${THREADS} \
-        -DBANCHO_LEGACY_HEADER=${LEGACY_HEADER} \
     && cmake --build build --parallel
 
 FROM debian:bookworm-slim

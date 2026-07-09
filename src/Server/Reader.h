@@ -9,34 +9,32 @@ namespace Server::Reader {
     inline Server::BanchoPacket::ParseStatus consume_packet_stream(std::shared_ptr<Server::Session::State> state) {
         Server::BanchoPacket::Packet packet{};
         std::size_t consumed_bytes = 0;
-        Server::BanchoPacket::ParseStatus parse_status = Server::BanchoPacket::ParseStatus::NeedMoreData;
+        Server::BanchoPacket::ParseStatus parse_status;
 
-        if (BANCHO_LEGACY_HEADER > 0 || state->legacy_header == true) {
-            state->legacy_header = true;
-            parse_status = Server::BanchoPacket::try_parse_packet(state->packet_stream, packet, consumed_bytes, true);
-        } else if (BANCHO_LEGACY_HEADER == 0 || state->legacy_header == false) {
-            state->legacy_header = false;
-            parse_status = Server::BanchoPacket::try_parse_packet(state->packet_stream, packet, consumed_bytes, false);
+        if (state->legacy_header.has_value()) {
+            // Header format locked in after first packet
+            parse_status = Server::BanchoPacket::try_parse_packet(state->packet_stream, packet, consumed_bytes, *state->legacy_header);
         } else {
+            // Auto-detect on first packet: try modern first, fall back to legacy
             Server::BanchoPacket::Packet modern_packet{};
-            std::size_t modern_consumed_bytes = 0;
-            const auto modern_status = Server::BanchoPacket::try_parse_packet(state->packet_stream, modern_packet, modern_consumed_bytes, false);
+            std::size_t modern_bytes = 0;
+            const BanchoPacket::ParseStatus parseStatus = Server::BanchoPacket::try_parse_packet(state->packet_stream, modern_packet, modern_bytes, false);
 
             Server::BanchoPacket::Packet legacy_packet{};
-            std::size_t legacy_consumed_bytes = 0;
-            const auto legacy_status = Server::BanchoPacket::try_parse_packet(state->packet_stream, legacy_packet, legacy_consumed_bytes, true);
+            std::size_t legacy_bytes = 0;
+            const auto legacy_status = Server::BanchoPacket::try_parse_packet(state->packet_stream, legacy_packet, legacy_bytes, true);
 
-            if (modern_status == Server::BanchoPacket::ParseStatus::Ok) {
+            if (parseStatus == Server::BanchoPacket::ParseStatus::Ok) {
                 state->legacy_header = false;
                 packet = std::move(modern_packet);
-                consumed_bytes = modern_consumed_bytes;
-                parse_status = modern_status;
+                consumed_bytes = modern_bytes;
+                parse_status = parseStatus;
             } else if (legacy_status == Server::BanchoPacket::ParseStatus::Ok) {
                 state->legacy_header = true;
                 packet = std::move(legacy_packet);
-                consumed_bytes = legacy_consumed_bytes;
+                consumed_bytes = legacy_bytes;
                 parse_status = legacy_status;
-            } else if (modern_status == Server::BanchoPacket::ParseStatus::Invalid &&
+            } else if (parseStatus == Server::BanchoPacket::ParseStatus::Invalid &&
                        legacy_status == Server::BanchoPacket::ParseStatus::Invalid) {
                 parse_status = Server::BanchoPacket::ParseStatus::Invalid;
             } else {

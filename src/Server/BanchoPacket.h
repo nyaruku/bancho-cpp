@@ -156,7 +156,7 @@ namespace Server::BanchoPacket {
         out.reserve((legacy_header ? legacy_header_size : modern_header_size) + payload.size());
         append_u16_le(out, packet_id);
         if (!legacy_header) {
-            out.push_back((compress || legacy_header) ? 1U : 0U);
+            out.push_back(compress ? 1U : 0U);
         }
         append_u32_le(out, static_cast<uint32_t>(payload.size()));
         out.insert(out.end(), payload.begin(), payload.end());
