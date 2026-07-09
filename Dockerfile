@@ -14,7 +14,8 @@ COPY . .
 
 ARG BUILD_TYPE=Release
 ARG HOST=127.0.0.1
-ARG PORT=13000
+ARG PORT=13380
+ARG THREADS=2
 
 RUN cmake -S . -B build -G Ninja \
         -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
@@ -22,6 +23,7 @@ RUN cmake -S . -B build -G Ninja \
         -DCMAKE_CXX_COMPILER=g++ \
         -DBANCHO_HOST=${HOST} \
         -DBANCHO_PORT=${PORT} \
+        -DBANCHO_THREADS=${THREADS} \
     && cmake --build build --parallel
 
 FROM debian:bookworm-slim
