@@ -1,0 +1,3 @@
+[submodule "docs/bancho-documentation.wiki"]
+	path = docs/bancho-documentation.wiki
+	url = git@github.com:Lekuruu/bancho-documentation.git
