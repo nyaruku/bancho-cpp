@@ -1,7 +1,7 @@
-#include <iostream>
 #include <thread>
 #include <vector>
 #include "Server/Server.h"
+#include "Server/Logger/Logger.h"
 
 int main() {
     try
@@ -12,7 +12,7 @@ int main() {
         std::vector<std::thread> threads;
         for (int i = 0; i < BANCHO_THREADS; i++) {
             threads.emplace_back([&io_context, i] {
-                std::cout << "Thread " << i << " started.\n";
+                Server::Logger::log(Server::Logger::Category::Thread, "Thread ", i, " started.");
                 io_context.run();
             });
         }
@@ -22,7 +22,7 @@ int main() {
     }
     catch (std::exception& e)
     {
-        std::cerr << "Exception: " << e.what() << "\n";
+        Server::Logger::log(Server::Logger::Category::Error, "Exception: ", e.what());
     }
     return 0;
 }

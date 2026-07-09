@@ -1,4 +1,8 @@
 #pragma once
+#include <algorithm>
+#include <iomanip>
+#include <sstream>
+#include "Logger/Logger.h"
 
 namespace Server::Event {
     inline void Disconnect(std::shared_ptr<Server::Session::State> state);
@@ -6,6 +10,31 @@ namespace Server::Event {
 }
 
 namespace Server::Reader {
+    inline void log_raw_read(std::shared_ptr<Server::Session::State> state, const std::size_t length) {
+        constexpr std::size_t preview_size = 64;
+        const std::size_t bytes_to_log = std::min(length, preview_size);
+
+        std::ostringstream hex;
+        hex << std::hex << std::setfill('0');
+        for (std::size_t i = 0; i < bytes_to_log; i++) {
+            if (i != 0) {
+                hex << ' ';
+            }
+            hex << std::setw(2) << static_cast<unsigned int>(static_cast<unsigned char>(state->read_buf[i]));
+        }
+        if (length > preview_size) {
+            hex << " ...";
+        }
+
+        std::error_code ec;
+        const auto endpoint = state->socket.remote_endpoint(ec);
+        if (!ec) {
+            Logger::log(Logger::Category::RawRead, "Raw read ", length, " bytes from ", endpoint, ": ", hex.str());
+        } else {
+            Logger::log(Logger::Category::RawRead, "Raw read ", length, " bytes: ", hex.str());
+        }
+    }
+
     inline Server::BanchoPacket::ParseStatus consume_packet_stream(std::shared_ptr<Server::Session::State> state) {
         Server::BanchoPacket::Packet packet{};
         std::size_t consumed_bytes = 0;
@@ -62,6 +91,7 @@ namespace Server::Reader {
                 return;
             }
 
+            log_raw_read(state, length);
             state->packet_stream.insert(state->packet_stream.end(), state->read_buf, state->read_buf + length);
             while (true) {
                 const auto parse_status = consume_packet_stream(state);
