@@ -15,6 +15,9 @@ services:
         - HOST
         - PORT
         - THREADS
-    container_name: bancho-cpp
+    container_name: bancho-server
     network_mode: host
     restart: always
+    depends_on:
+      postgres:
+        condition: service_healthy
